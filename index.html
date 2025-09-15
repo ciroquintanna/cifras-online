@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor e Apresentador de Músicas</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
+
+        /* Estilo da Interface de Edição */
+        #editor {
+            display: block; /* Visível por padrão */
+        }
+        #titulo-editor, #subtitulo-editor {
+            font-size: 44px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 10px;
+        }
+        #titulo-editor {
+            color: orange;
+            font-weight: bold;
+        }
+        #subtitulo-editor {
+            color: #fff;
+        }
+        select, textarea, button {
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 16px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 300px;
+        }
+        label {
+            display: block;
+            margin-top: 20px;
+        }
+        
+        /* Estilo da Interface de Apresentação */
+        #apresentador {
+            display: none; /* Escondido por padrão */
+        }
+        #titulo-apresentador, #subtitulo-apresentador {
+            font-size: 44px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 10px;
+        }
+        #titulo-apresentador {
+            color: orange;
+            font-weight: bold;
+        }
+        #subtitulo-apresentador {
+            color: #fff;
+        }
+        #musica-apresentador {
+            font-size: 24px;
+            line-height: 1.5;
+            white-space: pre-wrap; /* Mantém as quebras de linha */
+        }
+
+        /* Estilo do botão de voltar */
+        #btn-voltar {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="editor">
+        <header>
+            <div id="titulo-editor" contenteditable="true">Título da Música</div>
+            <div id="subtitulo-editor" contenteditable="true">Subtítulo ou Artista</div>
+        </header>
+        <label for="tom">Selecione o Tom (Maior):</label>
+        <select id="tom">
+            <option value="C">C</option>
+            <option value="C#">C# / Db</option>
+            <option value="D">D</option>
+            <option value="D#">D# / Eb</option>
+            <option value="E">E</option>
+            <option value="F">F</option>
+            <option value="F#">F# / Gb</option>
+            <option value="G">G</option>
+            <option value="G#">G# / Ab</option>
+            <option value="A">A</option>
+            <option value="A#">A# / Bb</option>
+            <option value="B">B</option>
+        </select>
+        <textarea id="musica" placeholder="Digite a música aqui usando os graus (ex.: I - IV - V)"></textarea>
+        <button onclick="apresentarMusica()">Apresentar</button>
+    </div>
+
+    <div id="apresentador">
+        <h1 id="titulo-apresentador"></h1>
+        <h2 id="subtitulo-apresentador"></h2>
+        <pre id="musica-apresentador"></pre>
+    </div>
+
+    <button id="btn-voltar" onclick="voltarParaEditor()">Voltar</button>
+
+<script>
+    const mapeamento = {
+        'C': ['C', 'Dm', 'Em', 'F', 'G', 'Am', 'Bm7/5b'],
+        'C#': ['C#', 'D#m', 'E#m', 'F#', 'G#', 'A#m', 'B#m7/5b'],
+        'D': ['D', 'Em', 'F#m', 'G', 'A', 'Bm', 'C#m7/5b'],
+        'D#': ['D#', 'Fm', 'Gm', 'G#', 'A#', 'Cm', 'Dm7/5b'],
+        'E': ['E', 'F#m', 'G#m', 'A', 'B', 'C#m', 'D#m7/5b'],
+        'F': ['F', 'Gm', 'Am', 'A#', 'C', 'Dm', 'Em7/5b'],
+        'F#': ['F#', 'G#m', 'A#m', 'B', 'C#', 'D#m', 'E#m7/5b'],
+        'G': ['G', 'Am', 'Bm', 'C', 'D', 'Em', 'F#m7/5b'],
+        'G#': ['G#', 'A#m', 'Cm', 'C#', 'D#', 'Fm', 'Gm7/5b'],
+        'A': ['A', 'Bm', 'C#m', 'D', 'E', 'F#m', 'G#m7/5b'],
+        'A#': ['A#', 'Cm', 'Dm', 'D#', 'F', 'Gm', 'Am7/5b'],
+        'B': ['B', 'C#m', 'D#m', 'E', 'F#', 'G#m', 'A#m7/5b']
+    };
+
+    const graus = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
+
+    function converter(texto, tom) {
+        let textoConvertido = texto;
+        const notasDoTom = mapeamento[tom];
+        if (!notasDoTom) return texto;
+
+        for (let i = 0; i < graus.length; i++) {
+            const grauRegex = new RegExp(`(?<=\\s|^)${graus[i]}(?=\\s|$)`, 'g');
+            textoConvertido = textoConvertido.replace(grauRegex, notasDoTom[i]);
+        }
+        return textoConvertido;
+    }
+
+    function apresentarMusica() {
+        const titulo = document.getElementById('titulo-editor').innerText;
+        const subtitulo = document.getElementById('subtitulo-editor').innerText;
+        const tom = document.getElementById('tom').value;
+        const textoOriginal = document.getElementById('musica').value;
+        const textoConvertido = converter(textoOriginal, tom);
+
+        // Preenche os elementos do apresentador
+        document.getElementById('titulo-apresentador').innerText = titulo;
+        document.getElementById('subtitulo-apresentador').innerText = subtitulo;
+        document.getElementById('musica-apresentador').innerText = textoConvertido;
+
+        // Alterna as visualizações
+        document.getElementById('editor').style.display = 'none';
+        document.getElementById('apresentador').style.display = 'block';
+        document.getElementById('btn-voltar').style.display = 'block';
+    }
+
+    function voltarParaEditor() {
+        document.getElementById('editor').style.display = 'block';
+        document.getElementById('apresentador').style.display = 'none';
+        document.getElementById('btn-voltar').style.display = 'none';
+    }
+</script>
+
+</body>
+</html>
