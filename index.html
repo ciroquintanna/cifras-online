@@ -18,16 +18,13 @@
             display: block; /* Visível por padrão */
         }
         #titulo-editor, #subtitulo-editor {
-            font-size: 44px;
+            font-size: 14px; /* Título e subtítulo menores */
+            color: #fff;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
             margin-bottom: 10px;
         }
         #titulo-editor {
-            color: orange;
             font-weight: bold;
-        }
-        #subtitulo-editor {
-            color: #fff;
         }
         select, textarea, button {
             margin-top: 10px;
@@ -49,21 +46,22 @@
             display: none; /* Escondido por padrão */
         }
         #titulo-apresentador, #subtitulo-apresentador {
-            font-size: 44px;
+            font-size: 14px; /* Título e subtítulo menores */
+            color: #fff;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
             margin-bottom: 10px;
         }
         #titulo-apresentador {
-            color: orange;
             font-weight: bold;
         }
-        #subtitulo-apresentador {
-            color: #fff;
-        }
         #musica-apresentador {
-            font-size: 24px;
+            font-size: 44px; /* Tamanho da fonte para letra e cifra */
             line-height: 1.5;
-            white-space: pre-wrap; /* Mantém as quebras de linha */
+            white-space: pre-wrap;
+        }
+        .cifra {
+            color: orange;
+            font-weight: bold;
         }
 
         /* Estilo do botão de voltar */
@@ -109,7 +107,7 @@
     <div id="apresentador">
         <h1 id="titulo-apresentador"></h1>
         <h2 id="subtitulo-apresentador"></h2>
-        <pre id="musica-apresentador"></pre>
+        <div id="musica-apresentador"></div>
     </div>
 
     <button id="btn-voltar" onclick="voltarParaEditor()">Voltar</button>
@@ -137,9 +135,10 @@
         const notasDoTom = mapeamento[tom];
         if (!notasDoTom) return texto;
 
+        // Substitui os graus pelas notas e envolve as notas em um span com a classe "cifra"
         for (let i = 0; i < graus.length; i++) {
             const grauRegex = new RegExp(`(?<=\\s|^)${graus[i]}(?=\\s|$)`, 'g');
-            textoConvertido = textoConvertido.replace(grauRegex, notasDoTom[i]);
+            textoConvertido = textoConvertido.replace(grauRegex, `<span class="cifra">${notasDoTom[i]}</span>`);
         }
         return textoConvertido;
     }
@@ -154,7 +153,8 @@
         // Preenche os elementos do apresentador
         document.getElementById('titulo-apresentador').innerText = titulo;
         document.getElementById('subtitulo-apresentador').innerText = subtitulo;
-        document.getElementById('musica-apresentador').innerText = textoConvertido;
+        // Usa innerHTML para renderizar as tags <span>
+        document.getElementById('musica-apresentador').innerHTML = textoConvertido;
 
         // Alterna as visualizações
         document.getElementById('editor').style.display = 'none';
