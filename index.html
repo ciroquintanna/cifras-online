@@ -35,6 +35,7 @@
         }
         textarea {
             height: 300px;
+            line-height: 1.5; /* Ajuda a visualização no editor */
         }
         label {
             display: block;
@@ -57,18 +58,13 @@
 
         /* Layout para as linhas da música */
         .linha-musica {
-            display: flex;
-            flex-direction: column;
-            margin-bottom: 10px;
-        }
-        .cifras-linha {
             font-size: 44px;
-            font-weight: bold;
+            margin-bottom: 20px;
+            white-space: pre; /* Mantém os espaços para alinhamento */
+        }
+        .cifra {
             color: orange;
-        }
-        .letras-linha {
-            font-size: 44px;
-            color: #fff;
+            font-weight: bold;
         }
 
         /* Estilo do botão de voltar */
@@ -107,7 +103,7 @@
             <option value="A#">A# / Bb</option>
             <option value="B">B</option>
         </select>
-        <textarea id="musica" placeholder="Digite a música aqui com as cifras nas linhas acima das sílabas.&#10;Exemplo:&#10;I     V&#10;Senhor, eu sei que tu me sondas&#10;VI     IV&#10;Seja onde for"></textarea>
+        <textarea id="musica" placeholder="Digite a música aqui com as cifras nas linhas acima das sílabas, alinhando com espaços.&#10;Exemplo:&#10;D                 G&#10;Deus e nosso Pai de amor&#10;Em        A             D&#10;O seu nome vamos louvar"></textarea>
         <button onclick="apresentarMusica()">Apresentar</button>
     </div>
 
@@ -138,35 +134,32 @@
     const graus = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
 
     function converter(texto, tom) {
-        let textoConvertido = texto;
-        const notasDoTom = mapeamento[tom];
-        if (!notasDoTom) return texto;
-
-        // Cria um mapa para encontrar as notas rapidamente
-        const notasMap = new Map();
+        const notasDoTom = new Map();
         for (let i = 0; i < graus.length; i++) {
-            notasMap.set(graus[i], notasDoTom[i]);
+            notasDoTom.set(graus[i], mapeamento[tom][i]);
         }
 
-        // Divide o texto em linhas
         const linhas = texto.split('\n');
-        const linhasConvertidas = [];
+        let htmlFinal = '';
 
-        // Percorre as linhas de duas em duas (cifra + letra)
         for (let i = 0; i < linhas.length; i += 2) {
             const linhaCifra = linhas[i] || '';
             const linhaLetra = linhas[i + 1] || '';
 
             // Converte as cifras na linha de cifras
-            const cifrasConvertidas = linhaCifra.split(' ').map(cifra => {
-                const nota = notasMap.get(cifra);
-                return nota ? nota : cifra;
-            }).join(' ');
-
-            linhasConvertidas.push({ cifras: cifrasConvertidas, letra: linhaLetra });
+            let cifraConvertida = linhaCifra;
+            for (let [grau, nota] of notasDoTom.entries()) {
+                const regex = new RegExp(grau, 'g');
+                cifraConvertida = cifraConvertida.replace(regex, nota);
+            }
+            
+            // Cria a estrutura HTML
+            htmlFinal += `<div class="linha-musica">`;
+            htmlFinal += `   <div class="cifra">${cifraConvertida}</div>`;
+            htmlFinal += `   <div class="letra">${linhaLetra}</div>`;
+            htmlFinal += `</div>`;
         }
-
-        return linhasConvertidas;
+        return htmlFinal;
     }
 
     function apresentarMusica() {
@@ -174,32 +167,11 @@
         const subtitulo = document.getElementById('subtitulo-editor').innerText;
         const tom = document.getElementById('tom').value;
         const textoOriginal = document.getElementById('musica').value;
-        const dadosMusica = converter(textoOriginal, tom);
+        const htmlMusica = converter(textoOriginal, tom);
 
         document.getElementById('titulo-apresentador').innerText = titulo;
         document.getElementById('subtitulo-apresentador').innerText = subtitulo;
-        
-        const apresentadorDiv = document.getElementById('musica-apresentador');
-        apresentadorDiv.innerHTML = ''; // Limpa o conteúdo anterior
-
-        dadosMusica.forEach(linha => {
-            if (linha.cifras || linha.letra) {
-                const linhaDiv = document.createElement('div');
-                linhaDiv.className = 'linha-musica';
-                
-                const cifrasDiv = document.createElement('div');
-                cifrasDiv.className = 'cifras-linha';
-                cifrasDiv.innerText = linha.cifras;
-                
-                const letraDiv = document.createElement('div');
-                letraDiv.className = 'letras-linha';
-                letraDiv.innerText = linha.letra;
-                
-                linhaDiv.appendChild(cifrasDiv);
-                linhaDiv.appendChild(letraDiv);
-                apresentadorDiv.appendChild(linhaDiv);
-            }
-        });
+        document.getElementById('musica-apresentador').innerHTML = htmlMusica;
 
         document.getElementById('editor').style.display = 'none';
         document.getElementById('apresentador').style.display = 'block';
