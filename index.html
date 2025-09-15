@@ -15,10 +15,10 @@
 
         /* Estilo da Interface de Edição */
         #editor {
-            display: block; /* Visível por padrão */
+            display: block;
         }
         #titulo-editor, #subtitulo-editor {
-            font-size: 14px; /* Título e subtítulo menores */
+            font-size: 14px;
             color: #fff;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
             margin-bottom: 10px;
@@ -43,10 +43,10 @@
         
         /* Estilo da Interface de Apresentação */
         #apresentador {
-            display: none; /* Escondido por padrão */
+            display: none;
         }
         #titulo-apresentador, #subtitulo-apresentador {
-            font-size: 14px; /* Título e subtítulo menores */
+            font-size: 14px;
             color: #fff;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
             margin-bottom: 10px;
@@ -54,14 +54,21 @@
         #titulo-apresentador {
             font-weight: bold;
         }
-        #musica-apresentador {
-            font-size: 44px; /* Tamanho da fonte para letra e cifra */
-            line-height: 1.5;
-            white-space: pre-wrap;
+
+        /* Layout para as linhas da música */
+        .linha-musica {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 10px;
         }
-        .cifra {
-            color: orange;
+        .cifras-linha {
+            font-size: 44px;
             font-weight: bold;
+            color: orange;
+        }
+        .letras-linha {
+            font-size: 44px;
+            color: #fff;
         }
 
         /* Estilo do botão de voltar */
@@ -100,7 +107,7 @@
             <option value="A#">A# / Bb</option>
             <option value="B">B</option>
         </select>
-        <textarea id="musica" placeholder="Digite a música aqui usando os graus (ex.: I - IV - V)"></textarea>
+        <textarea id="musica" placeholder="Digite a música aqui com as cifras nas linhas acima das sílabas.&#10;Exemplo:&#10;I     V&#10;Senhor, eu sei que tu me sondas&#10;VI     IV&#10;Seja onde for"></textarea>
         <button onclick="apresentarMusica()">Apresentar</button>
     </div>
 
@@ -135,12 +142,31 @@
         const notasDoTom = mapeamento[tom];
         if (!notasDoTom) return texto;
 
-        // Substitui os graus pelas notas e envolve as notas em um span com a classe "cifra"
+        // Cria um mapa para encontrar as notas rapidamente
+        const notasMap = new Map();
         for (let i = 0; i < graus.length; i++) {
-            const grauRegex = new RegExp(`(?<=\\s|^)${graus[i]}(?=\\s|$)`, 'g');
-            textoConvertido = textoConvertido.replace(grauRegex, `<span class="cifra">${notasDoTom[i]}</span>`);
+            notasMap.set(graus[i], notasDoTom[i]);
         }
-        return textoConvertido;
+
+        // Divide o texto em linhas
+        const linhas = texto.split('\n');
+        const linhasConvertidas = [];
+
+        // Percorre as linhas de duas em duas (cifra + letra)
+        for (let i = 0; i < linhas.length; i += 2) {
+            const linhaCifra = linhas[i] || '';
+            const linhaLetra = linhas[i + 1] || '';
+
+            // Converte as cifras na linha de cifras
+            const cifrasConvertidas = linhaCifra.split(' ').map(cifra => {
+                const nota = notasMap.get(cifra);
+                return nota ? nota : cifra;
+            }).join(' ');
+
+            linhasConvertidas.push({ cifras: cifrasConvertidas, letra: linhaLetra });
+        }
+
+        return linhasConvertidas;
     }
 
     function apresentarMusica() {
@@ -148,15 +174,33 @@
         const subtitulo = document.getElementById('subtitulo-editor').innerText;
         const tom = document.getElementById('tom').value;
         const textoOriginal = document.getElementById('musica').value;
-        const textoConvertido = converter(textoOriginal, tom);
+        const dadosMusica = converter(textoOriginal, tom);
 
-        // Preenche os elementos do apresentador
         document.getElementById('titulo-apresentador').innerText = titulo;
         document.getElementById('subtitulo-apresentador').innerText = subtitulo;
-        // Usa innerHTML para renderizar as tags <span>
-        document.getElementById('musica-apresentador').innerHTML = textoConvertido;
+        
+        const apresentadorDiv = document.getElementById('musica-apresentador');
+        apresentadorDiv.innerHTML = ''; // Limpa o conteúdo anterior
 
-        // Alterna as visualizações
+        dadosMusica.forEach(linha => {
+            if (linha.cifras || linha.letra) {
+                const linhaDiv = document.createElement('div');
+                linhaDiv.className = 'linha-musica';
+                
+                const cifrasDiv = document.createElement('div');
+                cifrasDiv.className = 'cifras-linha';
+                cifrasDiv.innerText = linha.cifras;
+                
+                const letraDiv = document.createElement('div');
+                letraDiv.className = 'letras-linha';
+                letraDiv.innerText = linha.letra;
+                
+                linhaDiv.appendChild(cifrasDiv);
+                linhaDiv.appendChild(letraDiv);
+                apresentadorDiv.appendChild(linhaDiv);
+            }
+        });
+
         document.getElementById('editor').style.display = 'none';
         document.getElementById('apresentador').style.display = 'block';
         document.getElementById('btn-voltar').style.display = 'block';
@@ -171,3 +215,4 @@
 
 </body>
 </html>
+
