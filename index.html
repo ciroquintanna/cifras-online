@@ -1,129 +1,136 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor e Apresentador de Músicas</title>
-    <style>
-        body {
-            background-color: #000;
-            color: #fff;
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            margin: 0;
-        }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor e Apresentador de Músicas</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
 
-        /* Estilo da Interface de Edição */
-        #editor {
-            display: block;
-        }
-        #titulo-editor, #subtitulo-editor {
-            font-size: 14px;
-            color: #fff;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-            margin-bottom: 10px;
-        }
-        #titulo-editor {
-            font-weight: bold;
-        }
-        select, textarea, button {
-            margin-top: 10px;
-            padding: 10px;
-            font-size: 16px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        textarea {
-            height: 300px;
-            line-height: 1.5;
-        }
-        label {
-            display: block;
-            margin-top: 20px;
-        }
-        
-        /* Estilo da Interface de Apresentação */
-        #apresentador {
-            display: none;
-        }
-        #titulo-apresentador, #subtitulo-apresentador {
-            font-size: 14px;
-            color: #fff;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-            margin-bottom: 10px;
-        }
-        #titulo-apresentador {
-            font-weight: bold;
-        }
+        /* Estilo da Interface de Edição */
+        #editor {
+            display: block;
+        }
+        #titulo-editor, #subtitulo-editor {
+            font-size: 14px;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 10px;
+        }
+        #titulo-editor {
+            font-weight: bold;
+        }
+        select, textarea, button {
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 16px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 300px;
+            line-height: 1.5;
+        }
+        label {
+            display: block;
+            margin-top: 20px;
+        }
+        
+        /* Estilo da Interface de Apresentação */
+        #apresentador {
+            display: none;
+        }
+        #titulo-apresentador, #subtitulo-apresentador {
+            font-size: 14px;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 10px;
+        }
+        #titulo-apresentador {
+            font-weight: bold;
+        }
 
-        /* Layout para as linhas da música */
-        .linha-musica {
-            display: flex;
-            flex-direction: column;
-            margin-bottom: 20px;
-        }
-        .cifras-linha {
-            font-size: 44px;
-            font-weight: bold;
-            color: orange;
-        }
-        .letras-linha {
-            font-size: 44px;
-            color: #fff;
-        }
-        /* Para o caso de não ter cifra na linha */
-        .cifras-linha.vazio {
-            height: 44px; /* Ocupa o mesmo espaço de uma linha de cifra */
-        }
+        #musica-apresentador {
+            font-size: 44px;
+            line-height: 1.5;
+        }
+        /* Cifra individual, para ser colocada acima da palavra */
+        .cifra-container {
+            position: relative;
+            display: inline-block;
+            vertical-align: top;
+            min-width: 30px;
+            margin-right: 5px;
+            text-align: left;
+        }
+        .cifra-nota {
+            display: block;
+            font-weight: bold;
+            color: orange;
+            position: absolute;
+            white-space: nowrap;
+            top: -1.2em;
+            left: 0;
+            font-size: 0.9em;
+        }
+        .linha-letra {
+            display: block;
+            white-space: pre-wrap;
+            margin-top: 0.8em;
+        }
 
-
-        /* Estilo do botão de voltar */
-        #btn-voltar {
-            display: none;
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            padding: 10px 20px;
-            background-color: #333;
-            color: #fff;
-            border: none;
-            cursor: pointer;
-        }
-    </style>
+        /* Estilo do botão de voltar */
+        #btn-voltar {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
 
-    <div id="editor">
-        <header>
-            <div id="titulo-editor" contenteditable="true">Título da Música</div>
-            <div id="subtitulo-editor" contenteditable="true">Subtítulo ou Artista</div>
-        </header>
-        <label for="tom">Selecione o Tom (Maior):</label>
-        <select id="tom">
-            <option value="C">C</option>
-            <option value="C#">C# / Db</option>
-            <option value="D">D</option>
-            <option value="D#">D# / Eb</option>
-            <option value="E">E</option>
-            <option value="F">F</option>
-            <option value="F#">F# / Gb</option>
-            <option value="G">G</option>
-            <option value="G#">G# / Ab</option>
-            <option value="A">A</option>
-            <option value="A#">A# / Bb</option>
-            <option value="B">B</option>
-        </select>
-        <textarea id="musica" placeholder="Digite a música aqui. Use o formato:&#10;Cifra (na primeira linha)&#10;Letra (na linha de baixo)&#10;&#10;Exemplo:&#10;I     IV&#10;Senhor, eu sei que tu me sondas&#10;VI     IV&#10;Seja onde for"></textarea>
-        <button onclick="apresentarMusica()">Apresentar</button>
-    </div>
+    <div id="editor">
+        <header>
+            <div id="titulo-editor" contenteditable="true">Título da Música</div>
+            <div id="subtitulo-editor" contenteditable="true">Subtítulo ou Artista</div>
+        </header>
+        <label for="tom">Selecione o Tom (Maior):</label>
+        <select id="tom">
+            <option value="C">C</option>
+            <option value="C#">C# / Db</option>
+            <option value="D">D</option>
+            <option value="D#">D# / Eb</option>
+            <option value="E">E</option>
+            <option value="F">F</option>
+            <option value="F#">F# / Gb</option>
+            <option value="G">G</option>
+            <option value="G#">G# / Ab</option>
+            <option value="A">A</option>
+            <option value="A#">A# / Bb</option>
+            <option value="B">B</option>
+        </select>
+        <textarea id="musica" placeholder="Digite a música aqui. Use [C] para cifras.&#10;Exemplo:&#10;[D]Meu Jesus a [G]Ti me achego&#10;[A]Com temor no cora[D]ção"></textarea>
+    </div>
 
-    <div id="apresentador">
-        <h1 id="titulo-apresentador"></h1>
-        <h2 id="subtitulo-apresentador"></h2>
-        <div id="musica-apresentador"></div>
-    </div>
+    <div id="apresentador">
+        <h1 id="titulo-apresentador"></h1>
+        <h2 id="subtitulo-apresentador"></h2>
+        <div id="musica-apresentador"></div>
+    </div>
 
-    <button id="btn-voltar" onclick="voltarParaEditor()">Voltar</button>
+    <button id="btn-voltar" onclick="voltarParaEditor()">Voltar</button>
 
 <script>
     const mapeamento = {
@@ -144,24 +151,55 @@
     const graus = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
 
     function converter(texto, tom) {
-        let textoConvertido = texto;
-        const notasDoTom = mapeamento[tom];
-        if (!notasDoTom) return texto;
-        
-        // Mapeia graus para notas
-        const notasMap = new Map();
+        const notasDoTom = new Map();
         for (let i = 0; i < graus.length; i++) {
-            notasMap.set(graus[i], notasDoTom[i]);
+            if (mapeamento[tom] && mapeamento[tom][i]) {
+                notasDoTom.set(graus[i], mapeamento[tom][i]);
+            }
         }
 
-        // Primeiro, converte todos os graus para notas
-        for (let [grau, nota] of notasMap.entries()) {
-            // Usa regex para garantir que só substitui o grau exato, não substrings
-            const regex = new RegExp(`\\b${grau}\\b`, 'g');
-            textoConvertido = textoConvertido.replace(regex, nota);
-        }
+        const linhas = texto.split('\n');
+        let htmlFinal = '';
 
-        return textoConvertido;
+        linhas.forEach(linha => {
+            const palavras = linha.split(/(\s+)/); // Divide por espaços, mas mantém os espaços
+
+            let linhaHTML = '<span class="linha-letra">';
+
+            palavras.forEach(palavra => {
+                if (palavra.trim() === '') {
+                    linhaHTML += palavra; // Adiciona os espaços sem modificação
+                    return;
+                }
+
+                const cifraMatch = palavra.match(/^\[([A-G][b#]?(?:m|maj|sus|add|dim|aug)?[0-9]?(?:\/[A-G][b#]?)?)\]/);
+                const grauMatch = palavra.match(/^\[(I|II|III|IV|V|VI|VII)\]/);
+
+                if (cifraMatch || grauMatch) {
+                    const cifraOriginal = cifraMatch ? cifraMatch[1] : grauMatch[1];
+                    let notaConvertida = cifraOriginal;
+
+                    if (grauMatch) {
+                        notaConvertida = notasDoTom.get(grauMatch[1]) || cifraOriginal;
+                    }
+
+                    const letraRestante = palavra.replace(cifraMatch || grauMatch, '');
+
+                    linhaHTML += `
+                        <span class="cifra-container">
+                            <span class="cifra-nota">${notaConvertida}</span>
+                            <span>${letraRestante}</span>
+                        </span>`;
+                } else {
+                    linhaHTML += `<span>${palavra}</span>`;
+                }
+            });
+
+            linhaHTML += '</span>';
+            htmlFinal += linhaHTML;
+        });
+
+        return htmlFinal;
     }
 
     function apresentarMusica() {
@@ -169,39 +207,12 @@
         const subtitulo = document.getElementById('subtitulo-editor').innerText;
         const tom = document.getElementById('tom').value;
         const textoOriginal = document.getElementById('musica').value;
-        
-        // Converte o texto antes de processá-lo
-        const textoProcessado = converter(textoOriginal, tom);
-        const linhas = textoProcessado.split('\n');
-        
-        const apresentadorDiv = document.getElementById('musica-apresentador');
-        apresentadorDiv.innerHTML = '';
-
-        for (let i = 0; i < linhas.length; i++) {
-            const linhaAtual = linhas[i];
-            
-            // Verifica se a linha é uma linha de cifra (checa se tem alguma letra maiúscula seguida por um espaço ou se a linha é apenas espaços)
-            // Esta é uma regra heurística, mas simples.
-            const contemCifra = /[A-Z#b]/.test(linhaAtual) && !/[a-z]/.test(linhaAtual);
-            
-            if (contemCifra || linhaAtual.trim() === '') {
-                 // É uma linha de cifra ou uma linha vazia (para espaçamento)
-                const linhaCifraDiv = document.createElement('div');
-                linhaCifraDiv.className = 'cifras-linha';
-                linhaCifraDiv.innerText = linhaAtual;
-                apresentadorDiv.appendChild(linhaCifraDiv);
-            } else {
-                // É uma linha de letra
-                const linhaLetraDiv = document.createElement('div');
-                linhaLetraDiv.className = 'letras-linha';
-                linhaLetraDiv.innerText = linhaAtual;
-                apresentadorDiv.appendChild(linhaLetraDiv);
-            }
-        }
+        const htmlMusica = converter(textoOriginal, tom);
 
         document.getElementById('titulo-apresentador').innerText = titulo;
         document.getElementById('subtitulo-apresentador').innerText = subtitulo;
-        
+        document.getElementById('musica-apresentador').innerHTML = htmlMusica;
+
         document.getElementById('editor').style.display = 'none';
         document.getElementById('apresentador').style.display = 'block';
         document.getElementById('btn-voltar').style.display = 'block';
@@ -216,5 +227,3 @@
 
 </body>
 </html>
-
-
