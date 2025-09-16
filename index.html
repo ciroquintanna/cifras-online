@@ -56,15 +56,35 @@
             font-weight: bold;
         }
 
-        /* Layout para as linhas da música */
-        .linha-musica {
+        #musica-apresentador {
             font-size: 44px;
-            margin-bottom: 20px;
-            white-space: pre; /* Mantém os espaços para alinhamento */
+            line-height: 1.5; /* Espaçamento entre as linhas */
         }
-        .cifra {
-            color: orange;
+        /* Cifra individual, para ser colocada acima da palavra */
+        .cifra-container {
+            position: relative;
+            display: inline-block; /* Permite que o container da cifra flua com o texto */
+            margin-right: 5px; /* Espaço entre as cifras */
+            vertical-align: top; /* Alinha a base da cifra com o topo da letra na mesma linha */
+            min-width: 30px; /* Garante que cifras pequenas tenham um mínimo de largura */
+            text-align: left;
+        }
+        .cifra-nota {
+            display: block; /* Faz a nota aparecer em sua própria linha (virtualmente acima) */
             font-weight: bold;
+            color: orange;
+            position: absolute; /* Posição absoluta para flutuar acima do texto */
+            white-space: nowrap; /* Impede que a cifra quebre linha */
+            top: -1.2em; /* Ajusta a posição vertical acima da linha de texto */
+            left: 0;
+            font-size: 0.7em; /* Pode ajustar o tamanho da cifra se necessário */
+            /* Aumenta o tamanho da fonte da cifra para combinar com o 44px da letra */
+             font-size: 0.9em; /* Ajuste para o tamanho da cifra */
+        }
+        .linha-letra {
+            white-space: pre-wrap; /* Mantém os espaços e quebras de linha da letra */
+            display: block;
+            margin-top: 0.8em; /* Ajuste para criar espaço entre as linhas de música */
         }
 
         /* Estilo do botão de voltar */
@@ -103,7 +123,7 @@
             <option value="A#">A# / Bb</option>
             <option value="B">B</option>
         </select>
-        <textarea id="musica" placeholder="Digite a música aqui com as cifras nas linhas acima das sílabas, alinhando com espaços.&#10;Exemplo:&#10;D                 G&#10;Deus e nosso Pai de amor&#10;Em        A             D&#10;O seu nome vamos louvar"></textarea>
+        <textarea id="musica" placeholder="Digite a música aqui. Use [C] para cifras.&#10;Exemplo:&#10;[D]Meu Jesus a [G]Ti me achego&#10;[A]Com temor no cora[D]ção"></textarea>
         <button onclick="apresentarMusica()">Apresentar</button>
     </div>
 
@@ -136,29 +156,37 @@
     function converter(texto, tom) {
         const notasDoTom = new Map();
         for (let i = 0; i < graus.length; i++) {
-            notasDoTom.set(graus[i], mapeamento[tom][i]);
-        }
-
-        const linhas = texto.split('\n');
-        let htmlFinal = '';
-
-        for (let i = 0; i < linhas.length; i += 2) {
-            const linhaCifra = linhas[i] || '';
-            const linhaLetra = linhas[i + 1] || '';
-
-            // Converte as cifras na linha de cifras
-            let cifraConvertida = linhaCifra;
-            for (let [grau, nota] of notasDoTom.entries()) {
-                const regex = new RegExp(grau, 'g');
-                cifraConvertida = cifraConvertida.replace(regex, nota);
+            if (mapeamento[tom] && mapeamento[tom][i]) {
+                notasDoTom.set(graus[i], mapeamento[tom][i]);
             }
-            
-            // Cria a estrutura HTML
-            htmlFinal += `<div class="linha-musica">`;
-            htmlFinal += `   <div class="cifra">${cifraConvertida}</div>`;
-            htmlFinal += `   <div class="letra">${linhaLetra}</div>`;
-            htmlFinal += `</div>`;
         }
+
+        // Regex para encontrar cifras no formato [C]
+        // Captura o conteúdo dentro dos colchetes
+        const cifraRegex = /\[([A-G][b#]?(?:m|maj|sus|add|dim|aug)?[0-9]?(?:\/[A-G][b#]?)?)\]/g;
+        
+        let htmlFinal = texto;
+
+        // Primeiro, substitui os graus pelo tom escolhido
+        for (let [grau, nota] of notasDoTom.entries()) {
+             // O regex precisa ser mais específico para não substituir partes de outras cifras
+             const grauPattern = new RegExp(`(?<!\\[)${grau}(?!\\])`, 'g');
+             htmlFinal = htmlFinal.replace(grauPattern, `<span class="cifra-nota">${nota}</span>`);
+        }
+
+        // Agora, processa as cifras que já estavam no formato [C], garantindo que a classe seja aplicada
+        htmlFinal = htmlFinal.replace(cifraRegex, (match, cifraOriginal) => {
+            // Se já foi convertida de grau, a nota já estará lá.
+            // Caso contrário, apenas aplica o estilo.
+            // Para simplicidade, vamos assumir que cifras complexas já vêm no formato correto.
+            return `<span class="cifra-container"><span class="cifra-nota">${cifraOriginal}</span></span>`;
+        });
+        
+        // Substitui quebras de linha por um div para que cada linha seja um bloco
+        // E envolve todo o texto da linha em um span para aplicar a formatação
+        htmlFinal = htmlFinal.split('\n').map(line => `<span class="linha-letra">${line}</span>`).join('');
+
+
         return htmlFinal;
     }
 
