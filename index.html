@@ -1,136 +1,142 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor e Apresentador de Músicas</title>
-    <style>
-        body {
-            background-color: #000;
-            color: #fff;
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            margin: 0;
-        }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor e Apresentador de Músicas</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
 
-        /* Estilo da Interface de Edição */
-        #editor {
-            display: block;
-        }
-        #titulo-editor, #subtitulo-editor {
-            font-size: 14px;
-            color: #fff;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-            margin-bottom: 10px;
-        }
-        #titulo-editor {
-            font-weight: bold;
-        }
-        select, textarea, button {
-            margin-top: 10px;
-            padding: 10px;
-            font-size: 16px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        textarea {
-            height: 300px;
-            line-height: 1.5;
-        }
-        label {
-            display: block;
-            margin-top: 20px;
-        }
-        
-        /* Estilo da Interface de Apresentação */
-        #apresentador {
-            display: none;
-        }
-        #titulo-apresentador, #subtitulo-apresentador {
-            font-size: 14px;
-            color: #fff;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-            margin-bottom: 10px;
-        }
-        #titulo-apresentador {
-            font-weight: bold;
-        }
+        /* Estilo da Interface de Edição */
+        #editor {
+            display: block;
+        }
+        #titulo-editor, #subtitulo-editor {
+            font-size: 14px;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 10px;
+        }
+        #titulo-editor {
+            font-weight: bold;
+        }
+        select, textarea, button {
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 16px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 300px;
+            line-height: 1.5;
+        }
+        label {
+            display: block;
+            margin-top: 20px;
+        }
 
-        #musica-apresentador {
-            font-size: 44px;
-            line-height: 1.5;
-        }
-        /* Cifra individual, para ser colocada acima da palavra */
-        .cifra-container {
-            position: relative;
-            display: inline-block;
-            vertical-align: top;
-            min-width: 30px;
-            margin-right: 5px;
-            text-align: left;
-        }
-        .cifra-nota {
-            display: block;
-            font-weight: bold;
-            color: orange;
-            position: absolute;
-            white-space: nowrap;
-            top: -1.2em;
-            left: 0;
-            font-size: 0.9em;
-        }
-        .linha-letra {
-            display: block;
-            white-space: pre-wrap;
-            margin-top: 0.8em;
-        }
+        /* Estilo da Interface de Apresentação */
+        #apresentador {
+            display: none;
+        }
+        #titulo-apresentador, #subtitulo-apresentador {
+            font-size: 14px;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 10px;
+        }
+        #titulo-apresentador {
+            font-weight: bold;
+        }
 
-        /* Estilo do botão de voltar */
-        #btn-voltar {
-            display: none;
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            padding: 10px 20px;
-            background-color: #333;
-            color: #fff;
-            border: none;
-            cursor: pointer;
-        }
-    </style>
+        /* Contêiner da música usando CSS Grid */
+        #musica-apresentador {
+            display: grid;
+            grid-template-columns: 1fr;
+            grid-auto-rows: min-content;
+            gap: 0;
+            font-size: 44px;
+            line-height: 1.2;
+        }
+
+        /* Cada linha de cifra/letra é uma linha no grid */
+        .linha-grid {
+            display: contents; /* Os filhos se tornam itens do grid pai */
+        }
+        
+        .cifra-grid {
+            color: orange;
+            font-weight: bold;
+            grid-column: 1; /* Ocupa a primeira coluna */
+            margin-top: 1em;
+        }
+        
+        .letra-grid {
+            color: #fff;
+            grid-column: 1; /* Ocupa a primeira coluna */
+            margin-bottom: 1em;
+        }
+        
+        /* Apenas para o caso de ter estrofes */
+        .espaco-estrofe {
+            grid-column: 1;
+            height: 1.5em; /* Espaço entre as estrofes */
+        }
+
+        /* Estilo do botão de voltar */
+        #btn-voltar {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
 
-    <div id="editor">
-        <header>
-            <div id="titulo-editor" contenteditable="true">Título da Música</div>
-            <div id="subtitulo-editor" contenteditable="true">Subtítulo ou Artista</div>
-        </header>
-        <label for="tom">Selecione o Tom (Maior):</label>
-        <select id="tom">
-            <option value="C">C</option>
-            <option value="C#">C# / Db</option>
-            <option value="D">D</option>
-            <option value="D#">D# / Eb</option>
-            <option value="E">E</option>
-            <option value="F">F</option>
-            <option value="F#">F# / Gb</option>
-            <option value="G">G</option>
-            <option value="G#">G# / Ab</option>
-            <option value="A">A</option>
-            <option value="A#">A# / Bb</option>
-            <option value="B">B</option>
-        </select>
-        <textarea id="musica" placeholder="Digite a música aqui. Use [C] para cifras.&#10;Exemplo:&#10;[D]Meu Jesus a [G]Ti me achego&#10;[A]Com temor no cora[D]ção"></textarea>
-    </div>
+    <div id="editor">
+        <header>
+            <div id="titulo-editor" contenteditable="true">Título da Música</div>
+            <div id="subtitulo-editor" contenteditable="true">Subtítulo ou Artista</div>
+        </header>
+        <label for="tom">Selecione o Tom (Maior):</label>
+        <select id="tom">
+            <option value="C">C</option>
+            <option value="C#">C# / Db</option>
+            <option value="D">D</option>
+            <option value="D#">D# / Eb</option>
+            <option value="E">E</option>
+            <option value="F">F</option>
+            <option value="F#">F# / Gb</option>
+            <option value="G">G</option>
+            <option value="G#">G# / Ab</option>
+            <option value="A">A</option>
+            <option value="A#">A# / Bb</option>
+            <option value="B">B</option>
+        </select>
+        <textarea id="musica" placeholder="Digite a música aqui. Use [C] para cifras.&#10;Exemplo:&#10;[D]Meu Jesus a [G]Ti me achego&#10;[A]Com temor no cora[D]ção"></textarea>
+        <button onclick="apresentarMusica()">Apresentar</button>
+    </div>
 
-    <div id="apresentador">
-        <h1 id="titulo-apresentador"></h1>
-        <h2 id="subtitulo-apresentador"></h2>
-        <div id="musica-apresentador"></div>
-    </div>
+    <div id="apresentador">
+        <h1 id="titulo-apresentador"></h1>
+        <h2 id="subtitulo-apresentador"></h2>
+        <div id="musica-apresentador"></div>
+    </div>
 
-    <button id="btn-voltar" onclick="voltarParaEditor()">Voltar</button>
+    <button id="btn-voltar" onclick="voltarParaEditor()">Voltar</button>
 
 <script>
     const mapeamento = {
@@ -162,41 +168,40 @@
         let htmlFinal = '';
 
         linhas.forEach(linha => {
-            const palavras = linha.split(/(\s+)/); // Divide por espaços, mas mantém os espaços
-
-            let linhaHTML = '<span class="linha-letra">';
+            const palavras = linha.split(/(\s+)/); // Divide a linha em palavras e espaços
+            let linhaCifra = '';
+            let linhaLetra = '';
 
             palavras.forEach(palavra => {
                 if (palavra.trim() === '') {
-                    linhaHTML += palavra; // Adiciona os espaços sem modificação
+                    linhaCifra += palavra;
+                    linhaLetra += palavra;
                     return;
                 }
 
-                const cifraMatch = palavra.match(/^\[([A-G][b#]?(?:m|maj|sus|add|dim|aug)?[0-9]?(?:\/[A-G][b#]?)?)\]/);
-                const grauMatch = palavra.match(/^\[(I|II|III|IV|V|VI|VII)\]/);
+                const cifraMatch = palavra.match(/^\[([A-G][b#]?(?:m|maj|sus|add|dim|aug)?[0-9]?(?:\/[A-G][b#]?)?)\](.*)/);
+                const grauMatch = palavra.match(/^\[(I|II|III|IV|V|VI|VII)\](.*)/);
 
                 if (cifraMatch || grauMatch) {
                     const cifraOriginal = cifraMatch ? cifraMatch[1] : grauMatch[1];
+                    const letraRestante = cifraMatch ? cifraMatch[2] : grauMatch[2];
                     let notaConvertida = cifraOriginal;
 
                     if (grauMatch) {
                         notaConvertida = notasDoTom.get(grauMatch[1]) || cifraOriginal;
                     }
 
-                    const letraRestante = palavra.replace(cifraMatch || grauMatch, '');
-
-                    linhaHTML += `
-                        <span class="cifra-container">
-                            <span class="cifra-nota">${notaConvertida}</span>
-                            <span>${letraRestante}</span>
-                        </span>`;
+                    linhaCifra += `<span class="cifra-grid">${notaConvertida}</span>`;
+                    linhaLetra += `<span class="letra-grid">${letraRestante}</span>`;
                 } else {
-                    linhaHTML += `<span>${palavra}</span>`;
+                    linhaCifra += `<span class="cifra-grid"></span>`;
+                    linhaLetra += `<span class="letra-grid">${palavra}</span>`;
                 }
             });
 
-            linhaHTML += '</span>';
-            htmlFinal += linhaHTML;
+            // Adiciona as duas linhas geradas ao HTML final
+            htmlFinal += `<div class="linha-grid">${linhaCifra}</div>`;
+            htmlFinal += `<div class="linha-grid">${linhaLetra}</div>`;
         });
 
         return htmlFinal;
