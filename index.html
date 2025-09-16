@@ -56,40 +56,38 @@
             font-weight: bold;
         }
 
-        /* Contêiner da música usando CSS Grid */
-        #musica-apresentador {
-            display: grid;
-            grid-template-columns: 1fr;
-            grid-auto-rows: min-content;
-            gap: 0;
+        /* Layout para as linhas da música usando flexbox */
+        .linha-musica {
+            display: flex;
+            flex-wrap: wrap; /* Permite que os blocos quebrem a linha */
+            margin-bottom: 20px;
             font-size: 44px;
+        }
+        
+        /* Cada par de cifra e letra */
+        .bloco-musica {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
             line-height: 1.2;
         }
-
-        /* Cada linha de cifra/letra é uma linha no grid */
-        .linha-grid {
-            display: contents; /* Os filhos se tornam itens do grid pai */
-        }
         
-        .cifra-grid {
-            color: orange;
+        .cifra-nota {
             font-weight: bold;
-            grid-column: 1; /* Ocupa a primeira coluna */
-            margin-top: 1em;
+            color: orange;
+            white-space: nowrap; /* Impede quebra de linha */
+            display: block;
+            min-height: 1.2em; /* Garante espaço mesmo sem cifra */
+        }
+        .letra {
+            white-space: nowrap;
+            display: block;
         }
         
-        .letra-grid {
-            color: #fff;
-            grid-column: 1; /* Ocupa a primeira coluna */
-            margin-bottom: 1em;
+        .bloco-musica:not(:last-child) {
+            margin-right: 1.2em; /* Espaçamento entre as palavras */
         }
         
-        /* Apenas para o caso de ter estrofes */
-        .espaco-estrofe {
-            grid-column: 1;
-            height: 1.5em; /* Espaço entre as estrofes */
-        }
-
         /* Estilo do botão de voltar */
         #btn-voltar {
             display: none;
@@ -126,7 +124,7 @@
             <option value="A#">A# / Bb</option>
             <option value="B">B</option>
         </select>
-        <textarea id="musica" placeholder="Digite a música aqui. Use [C] para cifras.&#10;Exemplo:&#10;[D]Meu Jesus a [G]Ti me achego&#10;[A]Com temor no cora[D]ção"></textarea>
+        <textarea id="musica" placeholder="Digite a música aqui. Use [C] para cifras.&#10;Exemplo:&#10;[D]Meu [G]Jesus a [A]Ti me achego&#10;[G]Com temor no cora[D]ção"></textarea>
         <button onclick="apresentarMusica()">Apresentar</button>
     </div>
 
@@ -168,14 +166,13 @@
         let htmlFinal = '';
 
         linhas.forEach(linha => {
-            const palavras = linha.split(/(\s+)/); // Divide a linha em palavras e espaços
-            let linhaCifra = '';
-            let linhaLetra = '';
-
+            const palavras = linha.split(/(\s+)/);
+            let linhaHTML = '<div class="linha-musica">';
+            
             palavras.forEach(palavra => {
                 if (palavra.trim() === '') {
-                    linhaCifra += palavra;
-                    linhaLetra += palavra;
+                    // Adiciona o espaço como um bloco para manter o alinhamento
+                    linhaHTML += `<div style="width: ${palavra.length}ch;"></div>`;
                     return;
                 }
 
@@ -191,19 +188,24 @@
                         notaConvertida = notasDoTom.get(grauMatch[1]) || cifraOriginal;
                     }
 
-                    linhaCifra += `<span class="cifra-grid">${notaConvertida}</span>`;
-                    linhaLetra += `<span class="letra-grid">${letraRestante}</span>`;
+                    linhaHTML += `
+                        <div class="bloco-musica">
+                            <span class="cifra-nota">${notaConvertida}</span>
+                            <span class="letra">${letraRestante}</span>
+                        </div>`;
                 } else {
-                    linhaCifra += `<span class="cifra-grid"></span>`;
-                    linhaLetra += `<span class="letra-grid">${palavra}</span>`;
+                    linhaHTML += `
+                        <div class="bloco-musica">
+                            <span class="cifra-nota"></span>
+                            <span class="letra">${palavra}</span>
+                        </div>`;
                 }
             });
-
-            // Adiciona as duas linhas geradas ao HTML final
-            htmlFinal += `<div class="linha-grid">${linhaCifra}</div>`;
-            htmlFinal += `<div class="linha-grid">${linhaLetra}</div>`;
+            
+            linhaHTML += '</div>';
+            htmlFinal += linhaHTML;
         });
-
+        
         return htmlFinal;
     }
 
